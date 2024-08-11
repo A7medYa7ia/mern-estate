@@ -1,15 +1,14 @@
-import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function SignIn() {
-  const [data, setData] = useState({});
+  const [formData, setData] = useState({});
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const handleChange = (e) => {
     setData({
-      ...data,
+      ...formData,
       [e.target.id]: e.target.value,
     });
   };
@@ -17,19 +16,24 @@ export default function SignIn() {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post("/api/auth/sign-in", data).then(() => {
-        setLoading(false);
-        setError(null);
-        navigate("/");
+      const res = await fetch("/api/auth/sign-in", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
-
-      if (res?.success === false) {
-        setError(res.message);
+      const data = await res.json();
+      console.log(data);
+      if (data.success === false) {
         setLoading(false);
+        setError(data.message);
         return;
       }
+      setLoading(false);
+      setError(null);
+      navigate("/");
     } catch (error) {
-      console.log(error.message);
       setLoading(false);
       setError(error.message);
     }
@@ -57,7 +61,7 @@ export default function SignIn() {
           disabled={loading}
           className="w-full  bg-slate-800 text-white p-4 rounded-lg text-md  text-xl hover:opacity-90  disabled:opacity-80"
         >
-          {loading ? "Loading..." : "SIGN In"}
+          {loading ? "Loading..." : "Sing In"}
         </button>
         <button></button>
       </form>
@@ -67,7 +71,7 @@ export default function SignIn() {
           <span className="text-blue-600">Sign up</span>
         </Link>
       </div>
-      {error && <p className="text-red-500">{error.message}</p>}
+      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 }

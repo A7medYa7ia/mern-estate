@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+
 export default function SignUp() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState(null);
@@ -16,19 +16,24 @@ export default function SignUp() {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post("/api/auth/sign-up", formData).then(() => {
-        setLoading(false);
-        setError(null);
-        navigate("/sign-in");
+      const res = await fetch("/api/auth/sign-up", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
-
-      if (res?.success === false) {
-        setError(res.message);
+      const data = await res.json();
+      console.log(data);
+      if (data.success === false) {
         setLoading(false);
+        setError(data.message);
         return;
       }
+      setLoading(false);
+      setError(null);
+      navigate("/sign-in");
     } catch (error) {
-      console.log("hello");
       setLoading(false);
       setError(error.message);
     }
