@@ -16,21 +16,19 @@ export default function SignUp() {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios
-        .post("/api/auth/sign-up", formData)
-        .then((response) => {
-          console.log(response);
-        });
+      const res = await axios.post("/api/auth/sign-up", formData).then(() => {
+        setLoading(false);
+        setError(null);
+        navigate("/sign-in");
+      });
+
       if (res?.success === false) {
         setError(res.message);
         setLoading(false);
         return;
       }
-
-      setLoading(false);
-      setError(null);
-      navigate("/sign-in");
     } catch (error) {
+      console.log("hello");
       setLoading(false);
       setError(error.message);
     }
