@@ -3,9 +3,12 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import userRouter from "./routes/user.routes.js";
 import authRouter from "./routes/auth.routes.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 const app = express();
+app.use(cookieParser());
+
 app.use(express.json());
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
