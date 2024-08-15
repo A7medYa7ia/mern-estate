@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getDownloadURL,
   getStorage,
@@ -7,6 +7,14 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import {
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  updateUserFailure,
+  updateUserStart,
+  updateUserSuccess,
+} from "../redux/userSlice";
 export default function Profile() {
   const { currentUser } = useSelector((state) => state.user);
   const fileRef = useRef(null);
@@ -14,7 +22,7 @@ export default function Profile() {
   const [file, setFile] = useState(undefined);
   const [fielUploaderror, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
-
+  const dispatch = useDispatch((state) => state.user);
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
     const fileName = new Date().getTime() + file.name;
@@ -43,10 +51,57 @@ export default function Profile() {
     }
   }, [file]);
 
+  const handlechange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
+  const handleDelete = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = (await res).json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess());
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
   return (
     <div className=" flex items-center flex-col gap-4 rounded-lg">
       <p className="text-4xl font-semibold  mt-7">Profile</p>
-      <form action="" className=" flex flex-col   gap-4 w-3/4 max-w-xl">
+      <form
+        action=""
+        onSubmit={handleSubmit}
+        className=" flex flex-col   gap-4 w-3/4 max-w-xl"
+      >
         <input
           type="file"
           ref={fileRef}
@@ -79,18 +134,23 @@ export default function Profile() {
           placeholder="userName"
           className="p-4 rounded-lg "
           id="username"
+          defaultValue={currentUser.username}
+          onChange={handlechange}
         />
         <input
           type="email"
           placeholder="email"
           className="p-4 rounded-lg "
           id="email"
+          defaultValue={currentUser.email}
+          onChange={handlechange}
         />
         <input
           type="password"
           placeholder="password"
           className="p-4 rounded-lg  "
           id="password"
+          onChange={handlechange}
         />
         <button className="text-white font-semibold bg-slate-700 p-4 rounded-lg hover:opacity-90">
           UPDATE
@@ -103,7 +163,10 @@ export default function Profile() {
         </button>
       </form>
       <div className="flex justify-around mt-5 max-w-5xl w-full">
-        <span className="text-red-600 font-semibold cursor-pointer">
+        <span
+          onClick={handleDelete}
+          className="text-red-600 font-semibold cursor-pointer"
+        >
           delete account
         </span>
         <span className="text-red-600 font-semibold cursor-pointer">
