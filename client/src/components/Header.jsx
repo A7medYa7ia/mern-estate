@@ -38,7 +38,7 @@ export default function Header() {
           <NavLink to={"/profile"}>
             {currentUser ? (
               <img
-                className="rounded-full h-7 w-7 object-cover"
+                className="rounded-full h-7 min-w-7 object-cover"
                 src={currentUser.avatar}
                 alt="profile"
               />
