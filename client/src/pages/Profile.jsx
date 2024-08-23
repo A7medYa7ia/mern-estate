@@ -130,6 +130,23 @@ export default function Profile() {
       setError(true);
     }
   };
+  const handleListingDelete = async (listingId) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setListings((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   return (
     <div className=" flex items-center flex-col gap-4 rounded-lg">
       <p className="text-4xl font-semibold  mt-7">Profile</p>
@@ -243,7 +260,10 @@ export default function Profile() {
               </Link>
 
               <div className="flex flex-col items-center">
-                <p className="text-red-500 hover:cursor-pointer hover:opacity-80 p-2">
+                <p
+                  onClick={() => handleListingDelete(listing._id)}
+                  className="text-red-500 hover:cursor-pointer hover:opacity-80 p-2"
+                >
                   DELET
                 </p>
                 <p className="text-green-500 hover:cursor-pointer hover:opacity-80 p-2">
