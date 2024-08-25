@@ -38,7 +38,7 @@ export default function Listing() {
         setListing(data);
         setLoading(false);
         setError(false);
-      } catch (error) {
+      } catch {
         setError(true);
         setLoading(false);
       }
